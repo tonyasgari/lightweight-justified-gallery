@@ -1,0 +1,101 @@
+.ljg-editor .ljg-placeholder {
+	box-sizing: border-box;
+	padding: 48px 24px;
+	border: 1px dashed #949494;
+	text-align: center;
+}
+
+.ljg-editor .ljg-placeholder .dashicons {
+	width: 36px;
+	height: 36px;
+	font-size: 36px;
+}
+
+.ljg-editor .ljg-placeholder h3 {
+	margin: 12px 0 4px;
+}
+
+.ljg-editor .ljg-placeholder p {
+	margin: 0 0 20px;
+}
+
+.ljg-editor .ljg-gallery {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: var(--ljg-row-gap) var(--ljg-column-gap);
+}
+
+.ljg-editor .ljg-gallery::after {
+	content: "";
+	flex-grow: 999999;
+	flex-basis: calc(var(--ljg-target-height) * 1.5);
+}
+
+.ljg-editor.ljg-stretch-last .ljg-gallery::after,
+.ljg-editor.ljg-mode-manual .ljg-gallery::after {
+	display: none;
+}
+
+.ljg-editor .ljg-item {
+	position: relative;
+	box-sizing: border-box;
+	flex-basis: calc(var(--ljg-target-height) * var(--ljg-ratio));
+	flex-grow: var(--ljg-ratio);
+	min-width: min(100%, 110px);
+	cursor: grab;
+	outline: none;
+}
+
+.ljg-editor.ljg-mode-manual .ljg-item {
+	flex: var(--ljg-ratio) 1 0;
+}
+
+.ljg-editor .ljg-item:focus,
+.ljg-editor .ljg-item.is-selected {
+	box-shadow: 0 0 0 3px #3858e9;
+}
+
+.ljg-editor .ljg-item.is-dragging {
+	opacity: 0.45;
+}
+
+.ljg-editor .ljg-item img {
+	display: block;
+	width: 100%;
+	height: auto;
+	pointer-events: none;
+}
+
+.ljg-editor .ljg-item-actions {
+	position: absolute;
+	top: 8px;
+	left: 50%;
+	display: flex;
+	transform: translateX(-50%);
+	background: #fff;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.ljg-editor .ljg-item-actions .components-button {
+	min-width: 36px;
+	padding: 6px;
+}
+
+.ljg-editor .ljg-manual-break {
+	flex-basis: 100%;
+	height: 0;
+	position: relative;
+	border-top: 1px dashed #757575;
+}
+
+.ljg-editor .ljg-manual-break span {
+	position: absolute;
+	top: -10px;
+	left: 8px;
+	padding: 0 6px;
+	background: #fff;
+	color: #50575e;
+	font-size: 11px;
+	line-height: 18px;
+}
