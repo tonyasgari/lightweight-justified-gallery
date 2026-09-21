@@ -58,6 +58,27 @@
 
 .ljg-editor .ljg-item.is-dragging {
 	opacity: 0.45;
+	cursor: grabbing;
+}
+
+.ljg-editor .ljg-item.is-drop-before::before,
+.ljg-editor .ljg-item.is-drop-after::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	background: #3858e9;
+	border-radius: 2px;
+	z-index: 2;
+}
+
+.ljg-editor .ljg-item.is-drop-before::before {
+	left: calc(var(--ljg-column-gap) / -2 - 2px);
+}
+
+.ljg-editor .ljg-item.is-drop-after::after {
+	right: calc(var(--ljg-column-gap) / -2 - 2px);
 }
 
 .ljg-editor .ljg-item img {
@@ -65,6 +86,12 @@
 	width: 100%;
 	height: auto;
 	pointer-events: none;
+	-webkit-user-drag: none;
+	user-select: none;
+}
+
+.ljg-editor .ljg-item.is-dragging .ljg-item-actions {
+	display: none;
 }
 
 .ljg-editor .ljg-item-actions {
