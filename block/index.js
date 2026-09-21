@@ -4,6 +4,7 @@
 	var el = wp.element.createElement;
 	var Fragment = wp.element.Fragment;
 	var useState = wp.element.useState;
+	var useRef = wp.element.useRef;
 	var useBlockProps = wp.blockEditor.useBlockProps;
 	var MediaUpload = wp.blockEditor.MediaUpload;
 	var MediaUploadCheck = wp.blockEditor.MediaUploadCheck;
@@ -59,6 +60,16 @@
 		var dragState = useState(null);
 		var draggedIndex = dragState[0];
 		var setDraggedIndex = dragState[1];
+		var overState = useState(null);
+		var dragOverIndex = overState[0];
+		var setDragOverIndex = overState[1];
+		var dragFromRef = useRef(null);
+
+		function endDrag() {
+			dragFromRef.current = null;
+			setDraggedIndex(null);
+			setDragOverIndex(null);
+		}
 
 		function updateImages(nextImages) {
 			setAttributes({ images: nextImages });
@@ -201,7 +212,12 @@
 								'aria-hidden': 'true'
 							}, el('span', {}, __('New row', 'lightweight-justified-gallery'))),
 							el('div', {
-								className: 'ljg-item' + (selectedIndex === index ? ' is-selected' : '') + (draggedIndex === index ? ' is-dragging' : ''),
+								className: 'ljg-item'
+									+ (selectedIndex === index ? ' is-selected' : '')
+									+ (draggedIndex === index ? ' is-dragging' : '')
+									+ (dragOverIndex === index && draggedIndex !== null && draggedIndex !== index
+										? (draggedIndex < index ? ' is-drop-after' : ' is-drop-before')
+										: ''),
 								style: { '--ljg-ratio': ratio },
 								role: 'listitem',
 								tabIndex: 0,
@@ -209,23 +225,54 @@
 								onClick: function () { setSelectedIndex(index); },
 								onFocus: function () { setSelectedIndex(index); },
 								onDragStart: function (event) {
+									event.stopPropagation();
+									dragFromRef.current = index;
 									setDraggedIndex(index);
-									event.dataTransfer.effectAllowed = 'move';
-									event.dataTransfer.setData('text/plain', String(index));
+									setSelectedIndex(index);
+									if (event.dataTransfer) {
+										event.dataTransfer.effectAllowed = 'move';
+										try {
+											event.dataTransfer.setData('text/ljg-index', String(index));
+											event.dataTransfer.setData('text/plain', String(index));
+										} catch (error) {
+											// Some browsers restrict custom types; the ref fallback covers it.
+										}
+									}
+								},
+								onDragEnter: function (event) {
+									if (dragFromRef.current === null) { return; }
+									event.preventDefault();
+									event.stopPropagation();
+									setDragOverIndex(index);
 								},
 								onDragOver: function (event) {
+									if (dragFromRef.current === null) { return; }
 									event.preventDefault();
-									event.dataTransfer.dropEffect = 'move';
+									event.stopPropagation();
+									if (event.dataTransfer) { event.dataTransfer.dropEffect = 'move'; }
+									if (dragOverIndex !== index) { setDragOverIndex(index); }
+								},
+								onDragLeave: function (event) {
+									event.stopPropagation();
 								},
 								onDrop: function (event) {
+									var from = dragFromRef.current;
+									if (from === null && event.dataTransfer) {
+										var raw = event.dataTransfer.getData('text/ljg-index') || event.dataTransfer.getData('text/plain');
+										if (raw !== '' && !isNaN(Number(raw))) { from = Number(raw); }
+									}
+									if (from === null || from === undefined) { return; }
 									event.preventDefault();
-									var from = Number(event.dataTransfer.getData('text/plain'));
-									if (Number.isInteger(from)) { reorder(from, index); }
-									setDraggedIndex(null);
+									event.stopPropagation();
+									if (from !== index) { reorder(from, index); }
+									endDrag();
 								},
-								onDragEnd: function () { setDraggedIndex(null); }
+								onDragEnd: function (event) {
+									event.stopPropagation();
+									endDrag();
+								}
 							},
-								el('img', { src: image.url, alt: image.alt || '' }),
+								el('img', { src: image.url, alt: image.alt || '', draggable: false }),
 								selectedIndex === index && el('div', { className: 'ljg-item-actions' },
 									el(Button, {
 										icon: 'arrow-left-alt2',
